@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Gestão de Tarefas - Frontend</title>
+  <title>Gestão de Tarefas</title>
   <style>
     :root{
       --bg: #f8fafc;
@@ -18,7 +18,8 @@
       --warning: #f59e0b;
       --danger: #dc2626;
       --shadow: 0 6px 20px rgba(2,6,23,0.08);
-      --radius: 12px;
+      --radius: 14px;
+      --table-head: #f8fafc;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -35,37 +36,43 @@
         --warning: #fbbf24;
         --danger: #ef4444;
         --shadow: 0 6px 20px rgba(0,0,0,0.35);
+        --table-head: #0b1730;
       }
     }
 
-    /* Layout base */
     html, body { height: 100%; }
     body {
       margin: 0;
       padding: 24px;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-      background: radial-gradient(1200px 600px at 10% -10%, #dbeafe40 0%, #fff0 60%) fixed,
-                  radial-gradient(1200px 600px at 110% 10%, #e9d5ff40 0%, #fff0 60%) fixed,
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans";
+      background: radial-gradient(1200px 600px at 15% -10%, #dbeafe40 0%, #0000 60%) fixed,
+                  radial-gradient(1200px 600px at 115% 10%, #e9d5ff40 0%, #0000 60%) fixed,
                   var(--bg);
       color: var(--text);
       max-width: 1100px;
       margin-inline: auto;
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; margin: 0 0 18px 0;
+    }
+    .title {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: grid; place-items: center;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: #fff; font-weight: 800;
+      box-shadow: 0 8px 24px rgba(59,130,246,.35);
+    }
     h1 {
-      margin: 0 0 18px 0;
+      margin: 0;
       font-weight: 800;
       letter-spacing: -0.02em;
-      font-size: clamp(24px, 2.6vw, 34px);
-      color: var(--text);
-    }
-
-    h3 {
-      margin: 0 0 12px 0;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      color: var(--text);
+      font-size: clamp(22px, 2.4vw, 30px);
     }
 
     /* Card do formulário */
@@ -74,9 +81,20 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 18px;
+      overflow: hidden; /* evita que conteúdos escapem do card */
       box-shadow: var(--shadow);
       margin-bottom: 20px;
     }
+    .form-head {
+      display: flex; align-items: center; gap: 10px; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .badge-id {
+      font-size: 12px; padding: 6px 10px; border-radius: 999px;
+      background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe;
+      display: none;
+    }
+    .badge-id.show { display: inline-flex; }
 
     .form-row {
       display: grid;
@@ -85,6 +103,8 @@
       align-items: start;
       margin-bottom: 12px;
     }
+    /* permite que a segunda coluna encolha corretamente em CSS Grid */
+    .form-row > :not(label) { min-width: 0; }
 
     label {
       margin-top: 8px;
@@ -97,15 +117,89 @@
       appearance: none;
       width: 100%;
       padding: 10px 12px;
+      box-sizing: border-box;
+      max-width: 100%;
+      min-width: 0;
       border: 1px solid var(--border);
       border-radius: 10px;
       background: #ffffff;
       color: var(--text);
       outline: none;
       transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+      font: inherit;
+      font-size: 1rem;
+      line-height: 1.35;
+    }
+    @media (prefers-color-scheme: dark) {
+      input, select, textarea {
+        background: #0b1220;
+        border-color: #1f2937;
+      }
+    }
+    textarea { min-height: 90px; resize: vertical; }
+
+    .date-input { position: relative; }
+    .date-input input[type="date"] { caret-color: transparent; }
+    .date-input.manual input { caret-color: auto; }
+    .date-input input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0; display: none; }
+    .date-input input[type="date"]::-webkit-clear-button { display: none; }
+
+    .date-input:not(.manual):not(.has-value) input[type="date"] {
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+    .date-input:not(.manual):not(.has-value) input[type="date"]::-webkit-datetime-edit {
+      color: transparent;
+    }
+        .date-input input[type="date"],
+    .date-input.manual input[type="text"] {
+      font-size: 1rem;
+      line-height: 1.35;
+      font-family: inherit;
+    }
+    .date-input input[type="date"]::-webkit-datetime-edit {
+      font-size: 1rem;
+      line-height: 1.35;
+    }
+    .date-input input::placeholder {
+      font-size: 1rem;
+      line-height: 1.35;
+      opacity: .75;
     }
 
-    textarea { min-height: 90px; resize: vertical; }
+    .date-trigger {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border);
+      background: #fff; color: var(--primary); cursor: pointer; display: grid; place-items: center; padding: 0;
+      box-shadow: 0 2px 6px rgba(2,6,23,0.06);
+    }
+    @media (prefers-color-scheme: dark) { .date-trigger { background: #0b1220; } }
+    .date-trigger::before {
+      content: ""; width: 16px; height: 16px; background: currentColor; display: block;
+      -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>') no-repeat center / contain;
+              mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>') no-repeat center / contain;
+    }
+
+    .date-manual-hint {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      pointer-events: auto; color: var(--muted); user-select: none; opacity: .9;
+      z-index: 1;
+    }
+    .date-input.has-value .date-manual-hint { display: none; }
+    .date-input.manual .date-manual-hint { display: none; }
+
+    .datepicker-pop { position: fixed; z-index: 9999; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); width: 300px; overflow: hidden; animation: fadein .12s ease; }
+    .dp-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    .dp-title { font-weight: 800; letter-spacing: .02em; }
+    .dp-nav { display: flex; gap: 6px; }
+    .dp-btn { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border); background: #fff; cursor: pointer; color: var(--text); }
+    @media (prefers-color-scheme: dark) { .dp-btn { background: #0b1220; } }
+    .dp-grid { display: grid; grid-template-columns: repeat(7, 1fr); padding: 8px; gap: 6px; }
+    .dp-cell { text-align: center; padding: 8px 0; border-radius: 8px; cursor: pointer; }
+    .dp-cell:hover { background: color-mix(in srgb, var(--primary) 18%, transparent); }
+    .dp-cell.muted { color: var(--muted); }
+    .dp-cell.today { outline: 2px solid color-mix(in srgb, var(--primary) 50%, transparent); }
+    .dp-cell.selected { background: color-mix(in srgb, var(--primary) 16%, transparent); border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border)); }
 
     input:focus, select:focus, textarea:focus {
       border-color: var(--primary);
@@ -114,7 +208,7 @@
     }
 
     /* Botões */
-    button {
+    .btn {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -133,54 +227,44 @@
       -webkit-tap-highlight-color: transparent;
       margin-right: 10px;
     }
+    .btn:hover { filter: saturate(1.05); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(37,99,235,.22); }
+    .btn:active { transform: translateY(0px) scale(.98); }
 
-    button:hover {
-      filter: saturate(1.05);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(37,99,235,.22);
-    }
-
-    button:active { transform: translateY(0px) scale(.98); }
-
-    /* Segundo botão do form vira "secundário" */
-    #form button + button {
+    .btn.secondary {
       background: #ffffff;
-      color: var(--text);
+      color: var(--border);
       border-color: var(--border);
       box-shadow: 0 2px 8px rgba(2,6,23,0.06);
     }
-    #form button + button:hover {
+    .btn.secondary:hover {
       border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
       box-shadow: 0 6px 16px rgba(2,6,23,0.12);
     }
 
-    /* Tabela em "card" */
-    .table-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+    /* Lista/header */
+    .list-head {
+      display:flex; align-items:center; gap:10px; margin:6px 0 8px;
     }
 
-    #tasksTable {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
+    /* Tabela */
+    .table-wrap {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow: hidden;
-      display: block;          /* torna responsivo em telas pequenas */
+    }
+    #tasksTable {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      display: block;
       max-width: 100%;
       overflow-x: auto;
-      white-space: nowrap;
     }
-
     #tasksTable thead th {
-      position: sticky;
-      top: 0;
-      background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 8%, #fff), #f8fafc);
-      color: #0f172a;
+      position: sticky; top: 0;
+      background: var(--table-head);
       text-align: left;
       font-weight: 800;
       letter-spacing: .02em;
@@ -188,180 +272,330 @@
       border-bottom: 1px solid var(--border);
       z-index: 1;
     }
-
     #tasksTable tbody td {
       padding: 12px 14px;
       border-bottom: 1px solid var(--border);
       color: var(--text);
+      vertical-align: top;
       white-space: normal;
     }
 
-    #tasksTable tbody tr:nth-child(odd) td {
-      background: color-mix(in srgb, var(--bg) 70%, #fff);
-    }
-
     #tasksTable tbody tr:hover td {
-      background: color-mix(in srgb, var(--primary-50) 40%, #fff);
+      background: color-mix(in srgb, var(--primary-50) 80%, #fff);
     }
 
-    /* Botões de ação na tabela */
-    #tasksTable td button {
+    .table-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn.table {
+      color: black;
       padding: 8px 12px;
       font-weight: 700;
       border-radius: 10px;
       border: 1px solid var(--border);
       background: #ffffff;
-      color: var(--text);
       box-shadow: 0 2px 8px rgba(2,6,23,0.06);
       margin-right: 6px;
     }
-    #tasksTable td button:hover {
+    .btn.table:hover {
       border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
       box-shadow: 0 6px 16px rgba(2,6,23,0.12);
     }
-    /* último botão da célula (geralmente "Excluir") fica em vermelho */
-    #tasksTable td button:last-child {
+    .btn.danger {
       background: color-mix(in srgb, var(--danger) 14%, #fff);
       color: #991b1b;
       border-color: color-mix(in srgb, var(--danger) 32%, var(--border));
     }
-    #tasksTable td button:last-child:hover {
+    .btn.danger:hover {
       background: color-mix(in srgb, var(--danger) 22%, #fff);
       color: #7f1d1d;
     }
 
-    /* Utilidades */
-    .muted { color: var(--muted); }
-    .spacer { height: 10px; }
+    /* Badges/chips */
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 700;
+      border: 1px solid;
+    }
+    .badge.todo { background: #fff7ed; color: #9a3412; border-color: #fed7aa; }
+    .badge.progress { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .badge.done { background: #ecfdf5; color: #166534; border-color: #bbf7d0; }
+
+    .chip {
+      display: inline-flex; align-items: center;
+      padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      color: var(--text);
+    }
+    .chip.p1 { background: #fee2e2; color: #7f1d1d; border-color:#fecaca; }
+    .chip.p2 { background: #ffedd5; color: #7c2d12; border-color:#fed7aa; }
+    .chip.p3 { background: #fef9c3; color: #713f12; border-color:#fde68a; }
+    .chip.p4 { background: #dcfce7; color: #14532d; border-color:#bbf7d0; }
+    .chip.p5 { background: #e0e7ff; color: #3730a3; border-color:#c7d2fe; }
+
+    /* Toast */
+    #toast {
+      position: fixed; right: 18px; bottom: 18px;
+      display: none; min-width: 220px; max-width: 70vw;
+      background: var(--card-bg); color: var(--text);
+      border: 1px solid var(--border); border-left: 6px solid var(--primary);
+      padding: 12px 14px; border-radius: 10px; box-shadow: var(--shadow); z-index: 9999;
+    }
+    #toast.show { display: block; animation: fadein .15s ease, fadeout .35s ease 3s forwards; }
+    #toast.success { border-left-color: var(--success); }
+    #toast.error { border-left-color: var(--danger); }
+    @keyframes fadein { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
+    @keyframes fadeout { to { opacity: 0; transform: translateY(6px);} }
 
     /* Responsividade */
     @media (max-width: 720px) {
       body { padding: 18px 14px; }
-      .form-row {
-        grid-template-columns: 1fr;
-      }
+      .form-row { grid-template-columns: 1fr; }
       label { margin-top: 0; }
       #form { padding: 14px; }
+      .btn { width: 100%; margin: 8px 0 0; }
+      .btn.secondary { width: auto; }
       #tasksTable thead th, #tasksTable tbody td { padding: 10px 12px; }
-      button { width: 100%; margin: 8px 0 0; }
-      #form button { width: auto; margin-right: 10px; }
     }
   </style>
 </head>
 <body>
-  <h1>Gestão de Tarefas</h1>
+  <div class="topbar">
+    <div class="title">
+      <div class="logo">TM</div>
+      <h1>Gestão de Tarefas</h1>
+    </div>
+    <button class="btn" onclick="getTasks()" title="Recarregar lista">Atualizar</button>
+  </div>
 
-  <div id="form">
-    <h3>Criar / Editar Tarefa</h3>
-    <div class="form-row"><label for="title">Título</label><input id="title" placeholder="Ex.: Comprar mantimentos"></div>
-    <div class="form-row"><label for="description">Descrição</label><textarea id="description" placeholder="Detalhes da tarefa"></textarea></div>
-    <div class="form-row"><label for="dueDate">Due Date</label><input id="dueDate" type="date"></div>
+  <div id="form" aria-label="Formulário de tarefa">
+    <div class="form-head">
+      <h3 style="margin:0;">Criar / Editar Tarefa</h3>
+      <span id="idBadge" class="badge-id"></span>
+    </div>
+
+    <!-- campo oculto para armazenar o ID ao editar -->
+    <input id="taskId" type="hidden"/>
+
+    <div class="form-row">
+      <label for="title">Título</label>
+      <input id="title" placeholder="Ex.: Comprar mantimentos">
+    </div>
+
+    <div class="form-row">
+      <label for="description">Descrição</label>
+      <textarea id="description" placeholder="Detalhes da tarefa"></textarea>
+    </div>
+
+    <div class="form-row">
+      <label for="dueDate">Data</label>
+      <div class="date-input">
+        <input id="dueDate" type="date" autocomplete="off">
+        <span class="date-manual-hint" title="Clique para digitar">dd/mm/aaaa</span>
+        <button type="button" class="date-trigger" aria-label="Abrir calendário"></button>
+      </div>
+    </div>
+
     <div class="form-row">
       <label for="status">Status</label>
       <select id="status">
-        <option>TODO</option>
-        <option>IN_PROGRESS</option>
-        <option>DONE</option>
+        <option value="TODO">Pendente</option>
+        <option value="IN_PROGRESS">Em Progresso</option>
+        <option value="DONE">Concluída</option>
       </select>
     </div>
+
     <div class="form-row">
       <label for="priority">Priority</label>
       <select id="priority">
         <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
       </select>
     </div>
-    <button onclick="createOrUpdate()">Salvar</button>
-    <button onclick="clearForm()">Limpar</button>
+
+    <div>
+      <button class="btn" onclick="createOrUpdate()">Salvar</button>
+      <button class="btn secondary" onclick="clearForm()">Limpar</button>
+    </div>
   </div>
 
-  <div style="display:flex;align-items:center;gap:10px;margin:6px 0 8px;">
+  <div class="list-head">
     <h3 style="margin:0;">Lista de Tarefas</h3>
-    <button onclick="getTasks()" title="Recarregar a lista">Atualizar</button>
   </div>
 
-  <table id="tasksTable" aria-label="Tabela de tarefas">
-    <thead>
-      <tr>
-        <th>ID</th><th>Título</th><th>Descrição</th><th>Due</th><th>Status</th><th>Priority</th><th>Ações</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="table-wrap">
+    <table id="tasksTable" aria-label="Tabela de tarefas">
+      <thead>
+        <tr>
+          <th style="min-width:70px;">ID</th>
+          <th style="min-width:180px;">Título</th>
+          <th style="min-width:260px;">Descrição</th>
+          <th style="min-width:120px;">Due</th>
+          <th style="min-width:140px;">Status</th>
+          <th style="min-width:110px;">Priority</th>
+          <th style="min-width:180px;">Ações</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
 const API = '/api/tasks';
 
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.className = '';
+  t.classList.add(type);
+  t.id = 'toast';
+  t.textContent = msg;
+  void t.offsetWidth; // reset animation
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function statusBadge(status) {
+  const s = normalizeStatus(status);
+  if (s === 'DONE') return '<span class="badge done">Concluída</span>';
+  if (s === 'IN_PROGRESS') return '<span class="badge progress">Em progresso</span>';
+  return '<span class="badge todo">Pendente</span>';
+}
+
+function priorityChip(p) {
+  const n = Number(p) || 3;
+  return `<span class="chip p${Math.min(Math.max(n,1),5)}">P${n}</span>`;
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+  } catch { return iso; }
+}
+
+// Normaliza o status vindo do backend/BD para os códigos esperados: TODO | IN_PROGRESS | DONE
+function normalizeStatus(status) {
+  const raw = (status ?? 'TODO').toString().trim().toUpperCase();
+  // remove acentos para comparação robusta
+  const s = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (s === 'TODO' || s === 'IN_PROGRESS' || s === 'DONE') return s;
+  // mapeia possíveis valores legados em português
+  if (s.startsWith('PENDEN')) return 'TODO';
+  if (s.includes('PROGRESS')) return 'IN_PROGRESS'; // EM PROGRESSO
+  if (s.startsWith('CONCLU')) return 'DONE'; // CONCLUIDA/CONCLUIDO
+  return 'TODO';
+}
+
 async function getTasks() {
-  const res = await fetch(API);
-  const tasks = await res.json();
   const tbody = document.querySelector('#tasksTable tbody');
-  tbody.innerHTML = '';
-  tasks.forEach(t => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${t.id ?? ''}</td>
-      <td>${escapeHtml(t.title ?? '')}</td>
-      <td>${escapeHtml(t.description ?? '')}</td>
-      <td>${t.dueDate ?? ''}</td>
-      <td>${t.status ?? ''}</td>
-      <td>${t.priority ?? ''}</td>
-      <td>
-        <button onclick="editTask(${t.id})">Editar</button>
-        <button onclick="deleteTask(${t.id})">Excluir</button>
-      </td>`;
-    tbody.appendChild(tr);
-  });
+  tbody.innerHTML = '<tr><td colspan="7" class="muted">Carregando...</td></tr>';
+  try {
+    const res = await fetch(API);
+    if (!res.ok) throw new Error('Falha ao buscar tarefas');
+    const tasks = await res.json();
+    if (!Array.isArray(tasks) || tasks.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="muted">Nenhuma tarefa encontrada.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = '';
+    tasks.forEach(t => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${t.id ?? ''}</td>
+        <td>${escapeHtml(t.title ?? '')}</td>
+        <td>${escapeHtml(t.description ?? '')}</td>
+        <td>${formatDate(t.dueDate)}</td>
+        <td>${statusBadge(t.status)}</td>
+        <td>${priorityChip(t.priority)}</td>
+        <td class="table-actions">
+          <button class="btn table" onclick="editTask(${t.id})">Editar</button>
+          <button class="btn table danger" onclick="deleteTask(${t.id})">Excluir</button>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="7" class="muted">Erro ao carregar.</td></tr>';
+    toast('Erro ao carregar tarefas', 'error');
+    console.error(e);
+  }
 }
 
 function escapeHtml(text) {
-  return text.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  return ('' + text).replace(/[&<>"']/g, m =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])
+  );
 }
 
 async function createOrUpdate() {
   const id = document.getElementById('taskId').value;
   const body = {
-    title: document.getElementById('title').value,
-    description: document.getElementById('description').value,
+    title: document.getElementById('title').value.trim(),
+    description: document.getElementById('description').value.trim(),
     dueDate: document.getElementById('dueDate').value || null,
     status: document.getElementById('status').value,
-    priority: parseInt(document.getElementById('priority').value)
+    priority: parseInt(document.getElementById('priority').value, 10)
   };
+  if (!body.title) { toast('Título é obrigatório', 'error'); return; }
 
-  if (!body.title) { alert('Título é obrigatório'); return; }
-
-  if (id) {
-    const res = await fetch(API + '/' + id, {
-      method: 'PUT',
+  try {
+    const res = await fetch(API + (id ? '/' + id : ''), {
+      method: id ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
-    if (res.ok) { clearForm(); getTasks(); } else { alert('Erro ao atualizar'); }
-  } else {
-    const res = await fetch(API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    if (res.ok) { clearForm(); getTasks(); } else { alert('Erro ao criar'); }
+    if (!res.ok) throw new Error('Falha ao salvar');
+    clearForm();
+    await getTasks();
+    toast(id ? 'Tarefa atualizada' : 'Tarefa criada', 'success');
+  } catch (e) {
+    toast('Erro ao salvar tarefa', 'error');
+    console.error(e);
   }
 }
 
 async function editTask(id) {
-  const res = await fetch(API + '/' + id);
-  if (!res.ok) { alert('Tarefa não encontrada'); return; }
-  const t = await res.json();
-  document.getElementById('taskId').value = t.id;
-  document.getElementById('title').value = t.title || '';
-  document.getElementById('description').value = t.description || '';
-  document.getElementById('dueDate').value = t.dueDate || '';
-  document.getElementById('status').value = t.status || 'TODO';
-  document.getElementById('priority').value = t.priority || 3;
+  try {
+    const res = await fetch(API + '/' + id);
+    if (!res.ok) { toast('Tarefa não encontrada', 'error'); return; }
+    const t = await res.json();
+    document.getElementById('taskId').value = t.id;
+    document.getElementById('title').value = t.title || '';
+    document.getElementById('description').value = t.description || '';
+    document.getElementById('dueDate').value = t.dueDate || '';
+    document.getElementById('dueDate').dispatchEvent(new Event('change', { bubbles: true }));
+    document.getElementById('status').value = normalizeStatus(t.status);
+    document.getElementById('priority').value = t.priority || 3;
+    setEditingBadge(t.id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (e) {
+    toast('Erro ao carregar tarefa', 'error');
+    console.error(e);
+  }
 }
 
 async function deleteTask(id) {
-  if (!confirm('Confirma exclusão?')) return;
-  const res = await fetch(API + '/' + id, { method: 'DELETE' });
-  if (res.status === 204) { getTasks(); } else { alert('Erro ao deletar'); }
+  if (!confirm('Confirma exclusão da tarefa ' + id + '?')) return;
+  try {
+    const res = await fetch(API + '/' + id, { method: 'DELETE' });
+    if (res.status === 204) {
+      await getTasks();
+      toast('Tarefa excluída', 'success');
+      if (document.getElementById('taskId').value === String(id)) clearForm();
+    } else {
+      throw new Error('Não foi possível excluir');
+    }
+  } catch (e) {
+    toast('Erro ao excluir tarefa', 'error');
+    console.error(e);
+  }
+}
+
+function setEditingBadge(id) {
+  const b = document.getElementById('idBadge');
+  b.textContent = 'Editando ID: ' + id;
+  b.classList.add('show');
 }
 
 function clearForm() {
@@ -369,9 +603,45 @@ function clearForm() {
   document.getElementById('title').value = '';
   document.getElementById('description').value = '';
   document.getElementById('dueDate').value = '';
+  document.getElementById('dueDate').dispatchEvent(new Event('change', { bubbles: true }));
   document.getElementById('status').value = 'TODO';
   document.getElementById('priority').value = '3';
+  document.getElementById('idBadge').classList.remove('show');
 }
 
-window.onload = () => { getTasks(); };
+window.onload = () => { getTasks(); initDateField(); };
 </script>
+<!-- DatePicker Script -->
+<script>
+function toISODate(d){ const z=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`; }
+function parsePtBRDate(str){ const m=/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(str).trim()); if(!m) return null; const [_,dd,mm,yyyy]=m; const d=new Date(Number(yyyy),Number(mm)-1,Number(dd)); if(d.getFullYear()!=Number(yyyy)||d.getMonth()!=Number(mm)-1||d.getDate()!=Number(dd)) return null; return d; }
+
+function initDateField(){
+  const input=document.getElementById('dueDate'); const wrap=input?.closest('.date-input'); if(!input||!wrap) return;
+  const hint=wrap.querySelector('.date-manual-hint'); const trig=wrap.querySelector('.date-trigger');
+  function refresh(){ if(input.value) wrap.classList.add('has-value'); else wrap.classList.remove('has-value'); }
+  refresh();
+  function openDP(e){ e?.preventDefault?.(); e?.stopPropagation?.(); openDatePickerFor(input); }
+  input.addEventListener('click', openDP); trig.addEventListener('click', openDP);
+  hint.addEventListener('click',(e)=>{ e.stopPropagation(); wrap.classList.add('manual'); input.setAttribute('data-orig-type','date'); try{ input.type='text'; }catch{} input.placeholder='dd/mm/aaaa'; input.value=''; input.focus(); });
+  input.addEventListener('keydown',(e)=>{ if(wrap.classList.contains('manual')) return; const ok=['Tab','Shift','Control','Alt','Meta','Escape','Enter']; if(!ok.includes(e.key)) e.preventDefault(); });
+  function exitManual(){ if(!wrap.classList.contains('manual')) return; const t=input.value; const d=parsePtBRDate(t); if(d){ try{ input.type='date'; }catch{} input.value=toISODate(d); wrap.classList.remove('manual'); refresh(); } else if(t.trim()!==''){ toast('Data inválida. Use dd/mm/aaaa','error'); } else { try{ input.type='date'; }catch{} wrap.classList.remove('manual'); refresh(); } }
+  input.addEventListener('blur', exitManual);
+  input.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); input.blur(); }});
+  input.addEventListener('change', refresh);
+}
+
+let dpInstance=null;
+function openDatePickerFor(input){ closeDatePicker(); const today=new Date(); const current=input.value?new Date(input.value):today; dpInstance=buildDatePicker(current,input); document.body.appendChild(dpInstance.root); positionDatePicker(dpInstance.root,input); setTimeout(()=>{ const onDoc=(e)=>{ if(!dpInstance||dpInstance.root.contains(e.target)) return; closeDatePicker(); document.removeEventListener('mousedown',onDoc); }; document.addEventListener('mousedown',onDoc); },0); }
+function closeDatePicker(){ if(dpInstance){ dpInstance.root.remove(); dpInstance=null; } }
+function buildDatePicker(date,input){ let view=new Date(date.getFullYear(),date.getMonth(),1); let selectedISO=input.value||null; const root=document.createElement('div'); root.className='datepicker-pop'; root.setAttribute('role','dialog'); root.setAttribute('aria-label','Seletor de data'); const header=document.createElement('div'); header.className='dp-header'; const title=document.createElement('div'); title.className='dp-title'; const nav=document.createElement('div'); nav.className='dp-nav'; const btnPrev=document.createElement('button'); btnPrev.className='dp-btn'; btnPrev.textContent='‹'; const btnNext=document.createElement('button'); btnNext.className='dp-btn'; btnNext.textContent='›'; nav.append(btnPrev,btnNext); header.append(title,nav); const grid=document.createElement('div'); grid.className='dp-grid'; root.append(header,grid);
+  const WEEK=['D','S','T','Q','Q','S','S']; const MONTHS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  function render(){ title.textContent=`${MONTHS[view.getMonth()]} ${view.getFullYear()}`; grid.innerHTML=''; WEEK.forEach(w=>{ const c=document.createElement('div'); c.className='dp-cell muted'; c.textContent=w; grid.append(c); }); const firstDay=new Date(view.getFullYear(),view.getMonth(),1); const startIdx=(firstDay.getDay()+7)%7; const daysInMonth=new Date(view.getFullYear(),view.getMonth()+1,0).getDate(); const prevDays=new Date(view.getFullYear(),view.getMonth(),0).getDate(); for(let i=startIdx-1;i>=0;i--){ const d=prevDays-i; addCell(d,-1,true);} for(let d=1; d<=daysInMonth; d++){ addCell(d,0,false);} const totalCells=7+startIdx+daysInMonth; let tail=(Math.ceil(totalCells/7)*7)-totalCells; for(let d=1; d<=tail; d++){ addCell(d,+1,true);} }
+  function addCell(day,md,muted){ const cell=document.createElement('div'); cell.className='dp-cell'; if(muted) cell.classList.add('muted'); cell.textContent=String(day); const cellDate=new Date(view.getFullYear(),view.getMonth()+md,day); const iso=toISODate(cellDate); const today=new Date(); if(cellDate.toDateString()===today.toDateString()) cell.classList.add('today'); if(selectedISO && iso===selectedISO) cell.classList.add('selected'); cell.addEventListener('click',()=>{ input.value=iso; input.dispatchEvent(new Event('change',{bubbles:true})); closeDatePicker(); }); grid.append(cell); }
+  btnPrev.addEventListener('click',()=>{ view=new Date(view.getFullYear(),view.getMonth()-1,1); render(); }); btnNext.addEventListener('click',()=>{ view=new Date(view.getFullYear(),view.getMonth()+1,1); render(); }); render(); return { root }; }
+function positionDatePicker(pop,input){ const r=input.getBoundingClientRect(); const margin=6; const width=300; const height=320; let top=r.bottom+margin; let left=r.left; if(left+width>window.innerWidth-8) left=window.innerWidth-width-8; if(top+height>window.innerHeight-8) top=r.top-height-margin; pop.style.top=`${Math.max(8,top)}px`; pop.style.left=`${Math.max(8,left)}px`; }
+
+window.addEventListener('keydown',(e)=>{ if(e.key==='Escape') closeDatePicker(); });
+</script>
+</body>
+</html>

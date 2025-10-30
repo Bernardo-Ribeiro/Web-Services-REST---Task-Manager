@@ -7,5 +7,4 @@ import todo.model.Task;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
-    // consultas customizadas podem ser adicionadas aqui
 }
